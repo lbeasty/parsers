@@ -237,3 +237,75 @@ if len(table_data) > 0:
 
 #['__class__', '__contains__', '__copy__', '__deepcopy__', '__delattr__', '__delitem__', '__dict__', '__doc__', '__format__', '__getattribute__', '__getitem__', '__hash__', '__init__', '__iter__', '__len__', '__module__', '__new__', '__nonzero__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_init', '_label__del', '_label__get', '_label__set', 'addnext', 'addprevious', 'append', 'attrib', 'base', 'base_url', 'body', 'clear', 'cssselect', 'drop_tag', 'drop_tree', 'extend', 'find', 'find_class', 'find_rel_links', 'findall', 'findtext', 'forms', 'get', 'get_element_by_id', 'getchildren', 'getiterator', 'getnext', 'getparent', 'getprevious', 'getroottree', 'head', 'index', 'insert', 'items', 'iter', 'iterancestors', 'iterchildren', 'iterdescendants', 'iterfind', 'iterlinks', 'itersiblings', 'itertext', 'keys', 'label', 'make_links_absolute', 'makeelement', 'nsmap', 'prefix', 'remove', 'replace', 'resolve_base_href', 'rewrite_links', 'set', 'sourceline', 'tag', 'tail', 'text', 'text_content', 'values', 'xpath']
   
+  
+  # -*- coding: utf-8 -*-
+import HTML
+import lxml.html as html
+import datetime
+import os.path
+import smtplib
+import main
+
+from os.path import basename
+#from pandas import DataFrame
+from time import gmtime, strftime
+
+addresses, email_list = main.ReadConfig("main.ini", "apoi")
+main_domain_stat = addresses[0].split("/")[2]
+print main_domain_stat
+today = strftime("%d.%m.%Y %H:%M", gmtime())
+a = []
+b = []
+table_data = []
+for page_link in addresses:
+    print page_link
+    page = html.parse(page_link)
+
+    for el in page.getroot().find_class('review_text'):
+        a.append(el.text.encode("ISO-8859-1"))#.decode("utf-8"))
+    for el in page.getroot().find_class('review_date'):
+        b.append(el.getchildren()[0].text.encode("ISO-8859-1"))#.decode("utf-8"))
+
+    for i in range(len(a)):
+        if os.path.isfile("tmpfile"):
+            f = open("tmpfile", "r+")
+            lasttime = f.readline()
+            if lasttime:
+                #x1 = b[i].encode("utf-8").split("|")[0].split()[0].split("-")
+                x1 = b[i].split()
+                #x2 = b[i].encode("utf-8").split("|")[1].split()[0].split(":")
+                x2 = [0, 0]
+                y1 = lasttime.split()[0].split(".")
+                y2 = lasttime.split()[1].split(":")
+                months = (u'ц▒ц≈ц▓', u'ц├ц≈ц│ц▒, u'ц█ц▓ц│, u'ц│ц▓ц▄', u'ц█ц▒, u'ц┴ц▌', u'ц┴ц▄', u'ц│ц┤ц⌠ц│, u'ц⌠ц▌ц▒ц▓', u'ц▐ц■ц┌ц▒, u'ц▌ц▒ц▓', u'ц└ц▀ц┌ц▒)
+      #month = next(i for i,name in enumerate(months,1) if name in x1[1].decode("utf-8"))
+                month = next(i for i,name in enumerate(months,1) if name in x1[1].decode("utf-8"))
+                #now = datetime.datetime(int(x1[0]), int(x1[1]), int(x1[2]), int(x2[0]), int(x2[1]))
+                now = datetime.datetime(int(x1[2]), int(month), int(x1[0]), 0, 0)
+                last = datetime.datetime(int(y1[2]), int(y1[1]), int(y1[0]), int(y2[0]), int(y2[1]))
+                if now > last:
+                    table_data.append([b[i], a[i]])
+            else:
+                table_data.append([b[i], a[i]])
+            f.close()
+        else:
+            table_data.append([b[i], a[i]])
+
+f = open("tmpfile", "w+")
+f.write(today)
+f.close()
+
+htmlcode = HTML.table(table_data, header_row = ['date', 'description'])
+
+if len(table_data) > 0:
+    newfile = "Opinions_" + main_domain_stat + "_".join(today.split()) + ".html"
+    f = open(newfile, "w+")
+    tmp = main.begin + htmlcode + main.end
+    f.write(tmp)
+    f.close()
+
+    for email in email_list:
+        main.send_email(main.username, main.passwd, email , email, "test subject", tmp)
+
+else:
+    print "Nothing new"
