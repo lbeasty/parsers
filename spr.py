@@ -10,7 +10,7 @@ from os.path import basename
 #from pandas import DataFrame
 from time import gmtime, strftime
 
-addresses, email_list = main.ReadConfig("main.ini", "moskva.tulp")
+addresses, email_list = main.ReadConfig("main.ini", "spr")
 main_domain_stat = addresses[0].split("/")[2]
 print main_domain_stat
 today = strftime("%d.%m.%Y %H:%M", gmtime())
