@@ -18,8 +18,6 @@ a = []
 b = []
 table_data = []
 for page_link in addresses:
-    #main_domain_stat = 'http://mosclinic.ru/medcentres'
-    #page_link = '%s/%s' % (main_domain_stat, "59")
     page = html.parse(page_link)
 
     #for el in page.getroot().find_class('noline'):
@@ -39,27 +37,27 @@ for page_link in addresses:
             b.append(unicode(time).encode("utf-8"))
 
 
-    for i in range(len(a)):
-        if os.path.isfile("tmpfile"):
-            f = open("tmpfile", "r+")
-            lasttime = f.readline()
-            if lasttime:
-                x1 = b[i].encode("utf-8").split("|")[0].split()[0].split("-")
-                #x2 = b[i].encode("utf-8").split("|")[1].split()[0].split(":")
-                x2 = [0, 0]
-                y1 = lasttime.split()[0].split(".")
-                y2 = lasttime.split()[1].split(":")
-                #months = (u'января', u'февраля', u'марта', u'апреля', u'мая', u'июня', u'июля', u'августа', u'сентября', u'октября', u'ноября', u'декабря')
-      #month = next(i for i,name in enumerate(months,1) if name in x1[1].decode("utf-8")) 
-                now = datetime.datetime(int(x1[0]), int(x1[1]), int(x1[2]), int(x2[0]), int(x2[1]))
-                last = datetime.datetime(int(y1[2]), int(y1[1]), int(y1[0]), int(y2[0]), int(y2[1]))
-                if now > last:
-                    table_data.append([b[i], a[i]])
-                else:
-                    pass
-            f.close()
+for i in range(len(a)):
+    if os.path.isfile("tmpfile"):
+        f = open("tmpfile", "r+")
+        lasttime = f.readline()
+        if lasttime:
+            x1 = b[i].encode("utf-8").split("|")[0].split()[0].split("-")
+            #x2 = b[i].encode("utf-8").split("|")[1].split()[0].split(":")
+            x2 = [0, 0]
+            y1 = lasttime.split()[0].split(".")
+            y2 = lasttime.split()[1].split(":")
+            #months = (u'января', u'февраля', u'марта', u'апреля', u'мая', u'июня', u'июля', u'августа', u'сентября', u'октября', u'ноября', u'декабря')
+            #month = next(i for i,name in enumerate(months,1) if name in x1[1].decode("utf-8")) 
+            now = datetime.datetime(int(x1[0]), int(x1[1]), int(x1[2]), int(x2[0]), int(x2[1]))
+            last = datetime.datetime(int(y1[2]), int(y1[1]), int(y1[0]), int(y2[0]), int(y2[1]))
+            if now > last:
+                table_data.append([b[i], a[i]])
         else:
-            table_data.append([b[i], a[i]])
+            table_data.append([b[i], a[i]])    
+        f.close()
+    else:
+        table_data.append([b[i], a[i]])
     
 f = open("tmpfile", "w+")
 f.write(today)
